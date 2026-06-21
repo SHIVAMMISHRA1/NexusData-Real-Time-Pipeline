@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ OMNIX PRO // Cyber-Aggregator Terminal</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-base: #0a0c10; --bg-surface: #121620; --border-glow: #1f293d;
+            --text-main: #f8fafc; --text-muted: #64748b; --neon-cyan: #0ea5e9;
+            --neon-emerald: #10b981; --neon-gold: #f59e0b; --font-stack: 'SF Pro Display', -apple-system, system-ui, sans-serif;
+        }
+        body { background-color: var(--bg-base); color: var(--text-main); font-family: var(--font-stack); margin: 0; padding: 0; }
+        
+        .global-navigation-chassis { background-color: rgba(18, 22, 32, 0.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-glow); padding: 16px 5%; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
+        .branding-core { font-size: 24px; font-weight: 900; color: white; text-decoration: none; letter-spacing: -0.03em; }
+        .branding-core span { color: var(--neon-cyan); text-shadow: 0 0 15px rgba(14, 165, 233, 0.4); }
+        
+        .search-engine-bay { display: flex; align-items: center; width: 50%; position: relative; gap: 12px; }
+        .search-engine-bay input { background: #161b26; border: 1px solid var(--border-glow); color: white; padding: 14px 18px; border-radius: 8px; font-size: 15px; outline: none; flex-grow: 1; }
+        .btn-live-search-engine { background: linear-gradient(135deg, var(--neon-cyan), #2563eb); color: white; border: none; padding: 14px 24px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; white-space: nowrap; }
+
+        .suggestion-box-dropdown { position: absolute; top: 56px; left: 0; width: 80%; background: #121620; color: white; border-radius: 8px; display: none; z-index: 5000; max-height: 250px; overflow-y: auto; border: 1px solid var(--border-glow); }
+        .suggestion-item-row { padding: 14px 18px; cursor: pointer; font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.02); }
+        .suggestion-item-row:hover { background: #1e2538; color: var(--neon-cyan); }
+
+        .category-tab-bar { display: flex; justify-content: center; gap: 12px; padding: 18px 5%; background: #0e1118; border-bottom: 1px solid var(--border-glow); }
+        .tab-trigger-btn { background: #161b26; border: 1px solid var(--border-glow); color: var(--text-muted); padding: 11px 26px; border-radius: 30px; font-weight: 600; font-size: 14px; cursor: pointer; }
+        .tab-trigger-btn.active, .tab-trigger-btn:hover { background: rgba(14,165,233,0.1); color: var(--neon-cyan); border-color: var(--neon-cyan); }
+
+        .catalog-main-wrapper { padding: 30px 5%; }
+        .category-section-block { display: block; margin-bottom: 40px; }
+        .category-matrix-title { font-size: 18px; font-weight: 800; text-transform: uppercase; margin-bottom: 20px; color: var(--text-muted); display: flex; align-items: center; gap: 12px; }
+        .category-matrix-title::after { content: ''; flex-grow: 1; height: 1px; background: var(--border-glow); }
+        
+        .products-grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 24px; }
+        .product-telemetry-card { background: var(--bg-surface); border: 1px solid var(--border-glow); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .product-telemetry-card:hover { transform: translateY(-5px); border-color: rgba(14,165,233,0.4); }
+        
+        .visual-media-frame { width: 100%; height: 190px; background: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; padding: 14px; box-sizing: border-box; margin-bottom: 16px; overflow: hidden; }
+        .visual-media-frame img { max-width: 100%; max-height: 100%; object-fit: contain; background: white; }
+        
+        .product-title-text { font-size: 14px; font-weight: 600; margin: 0 0 16px 0; line-height: 1.5; color: var(--text-main); height: 42px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+        .price-row-block { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.03); }
+        .price-numeric { font-size: 18px; font-weight: 800; color: white; }
+        .platform-tag { font-size: 10px; font-weight: 800; background: rgba(16,185,129,0.1); color: var(--neon-emerald); border: 1px solid rgba(16,185,129,0.2); padding: 4px 10px; border-radius: 6px; text-transform: uppercase; }
+        
+        /* 📑 SIDE ANALYTICS OVERLAY PANEL DRAWER */
+        .side-panel-drawer { position: fixed; top: 0; right: -560px; width: 500px; height: 100%; background: #0e121a; border-left: 1px solid var(--border-glow); box-shadow: -30px 0 70px rgba(0,0,0,0.8); z-index: 2000; transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); padding: 30px; box-sizing: border-box; overflow-y: auto; }
+        .side-panel-drawer.active { right: 0; }
+        .section-header-pill { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.08em; margin: 25px 0 12px 0; display: block; }
+        
+        /* Fixed Interactive Clickable Target Node Link Styling */
+        .store-route-node { background: #161b26; border: 1px solid var(--border-glow); padding: 14px 18px; border-radius: 8px; font-size: 14px; color: white; text-decoration: none; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; transition: border-color 0.2s; cursor: pointer; }
+        .store-route-node:hover { border-color: var(--neon-cyan); background: #1c2333; }
+        
+        .whatsapp-toggle-switch { display: flex; align-items: center; justify-content: space-between; background: rgba(16,185,129,0.05); border: 1px solid rgba(16,185,129,0.15); padding: 14px 18px; border-radius: 8px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <nav class="global-navigation-chassis">
+        <a href="/" class="branding-core">⚡ OMNIX // <span>PRO</span></a>
+        <div class="search-engine-bay">
+            <input type="text" id="omnixGlobalSearch" placeholder="Search premium hardware assets matrix..." autocomplete="off">
+            <button class="btn-live-search-engine" onclick="triggerOmnichannelLiveSearch()">Search Matrix</button>
+            <div class="suggestion-box-dropdown" id="suggestionDropdown"></div>
+        </div>
+    </nav>
+
+    <div class="category-tab-bar">
+        <button class="tab-trigger-btn active" onclick="switchCategoryView('All')">💎 Master Stream</button>
+        <button class="tab-trigger-btn" onclick="switchCategoryView('Devices')">📱 Hardware Matrix</button>
+        <button class="tab-trigger-btn" onclick="switchCategoryView('Fitness')">💪 Bio Nutrition</button>
+        <button class="tab-trigger-btn" onclick="switchCategoryView('Grocery')">🥤 FMCG Superstore</button>
+    </div>
+
+    <div class="catalog-main-wrapper">
+        <div class="category-section-block" id="blockDevices">
+            <h2 class="category-matrix-title" id="titleDevices">📱 Hardware Matrix Logs</h2>
+            <div class="products-grid-container" id="gridDevices"></div>
+        </div>
+        <div class="category-section-block" id="blockFitness">
+            <h2 class="category-matrix-title" id="titleFitness">💪 Bio Nutrition Clusters</h2>
+            <div class="products-grid-container" id="gridFitness"></div>
+        </div>
+        <div class="category-section-block" id="blockGrocery">
+            <h2 class="category-matrix-title" id="titleGrocery">🥤 FMCG Commodities</h2>
+            <div class="products-grid-container" id="gridGrocery"></div>
+        </div>
+    </div>
+
+    <div class="side-panel-drawer" id="biDrawer">
+        <button style="background:none; border:none; color:var(--text-muted); font-size:26px; float:right; cursor:pointer;" onclick="closeDeepAnalysisDrawer()">✕</button>
+        <h3 id="panelName" style="margin:0 0 8px 0; color:white; font-size:18px; line-height:1.4; font-weight:800;">Analytics Console</h3>
+        <span id="panelPlat" class="platform-tag" style="background: rgba(14,165,233,0.1); color: var(--neon-cyan); border-color: rgba(14,165,233,0.2);">Resolving Vectors</span>
+
+        <div class="whatsapp-toggle-switch">
+            <span style="font-size:13px; font-weight:600; color: #fff;">WhatsApp Automation Routing</span>
+            <input type="checkbox" id="whatsappToggleCheckbox" style="transform: scale(1.3); cursor:pointer;" onchange="commitToggleState()">
+        </div>
+
+        <span class="section-header-pill">Marketplace Interface Nodes (Click to Open)</span>
+        <div id="panelLinksGrid"></div>
+
+        <span class="section-header-pill">Linear Prediction Matrix Model</span>
+        <div style="background:#090c10; padding:16px; border-radius:12px; border:1px solid var(--border-glow); height:180px; margin-bottom:20px;">
+            <canvas id="drawerChartCore" style="width:100%; height:100%;"></canvas>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+            <div style="background:#161b26; padding:14px; border-radius:8px; border:1px solid var(--border-glow);">
+                <span style="font-size:9px; color:var(--text-muted); font-weight:800; letter-spacing:0.05em;">7-DAY DEVIATION</span>
+                <h3 id="p7Target" style="margin:6px 0 0 0; color:var(--neon-cyan); font-size:20px; font-weight:800;">₹0</h3>
+            </div>
+            <div style="background:#161b26; padding:14px; border-radius:8px; border:1px solid var(--border-glow);">
+                <span style="font-size:9px; color:var(--text-muted); font-weight:800; letter-spacing:0.05em;">15-DAY ESTIMATION</span>
+                <h3 id="p15Target" style="margin:6px 0 0 0; color:var(--neon-gold); font-size:20px; font-weight:800;">₹0</h3>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let MASTER_INVENTORY_STREAM = {{ inventory_payload | tojson | safe }};
+        let chartInstanceReference = null;
+        let focalTargetPayload = null;
+
+        function compileStorefrontGrid(filterKeyword = "") {
+            const categories = ["Devices", "Fitness", "Grocery"];
+            categories.forEach(cat => { document.getElementById(`grid${cat}`).innerHTML = ""; });
+
+            MASTER_INVENTORY_STREAM.forEach(item => {
+                if (filterKeyword && !item.name.toLowerCase().includes(filterKeyword)) return;
+
+                const dynamicAssetSource = (item.image && item.image.startsWith('http')) ? item.image : "https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=600";
+
+                const cardHTML = `
+                    <div class="product-telemetry-card" onclick="launchDeepAnalysisDrawer(${item.id})">
+                        <div class="visual-media-frame"><img src="${dynamicAssetSource}" alt="Asset Photography Layer"></div>
+                        <h4 class="product-title-text">${item.name}</h4>
+                        <div class="price-row-block">
+                            <span class="price-numeric">₹${item.best_price}</span>
+                            <span class="platform-tag">${item.best_platform}</span>
+                        </div>
+                    </div>`;
+                
+                const gridRef = document.getElementById(`grid${item.category}`);
+                if (gridRef) gridRef.innerHTML += cardHTML;
+            });
+
+            categories.forEach(cat => {
+                const count = document.getElementById(`grid${cat}`).children.length;
+                document.getElementById(`block${cat}`).style.display = count > 0 ? "block" : "none";
+            });
+        }
+
+        function switchCategoryView(selectedCategory) {
+            document.querySelectorAll('.tab-trigger-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if(btn.innerText.includes(selectedCategory) || (selectedCategory === 'All' && btn.innerText.includes('Master'))) {
+                    btn.classList.add('active');
+                }
+            });
+            const categories = ["Devices", "Fitness", "Grocery"];
+            categories.forEach(cat => {
+                const block = document.getElementById(`block${cat}`);
+                if (selectedCategory === "All") {
+                    block.style.display = document.getElementById(`grid${cat}`).children.length > 0 ? "block" : "none";
+                } else {
+                    block.style.display = cat === selectedCategory ? "block" : "none";
+                }
+            });
+        }
+
+        function triggerOmnichannelLiveSearch() {
+            const rawVal = document.getElementById('omnixGlobalSearch').value.trim();
+            if(!rawVal) return;
+            
+            const btn = document.querySelector('.btn-live-search-engine');
+            btn.innerText = "Querying Nodes...";
+            
+            fetch('/api/live-search', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ keyword: rawVal })
+            })
+            .then(res => res.json())
+            .then(data => {
+                setTimeout(syncTelemetryStreams, 2000);
+            });
+        }
+
+        document.getElementById('omnixGlobalSearch').addEventListener('input', function(e) {
+            const val = e.target.value.trim();
+            const dropdown = document.getElementById('suggestionDropdown');
+            
+            if(val.length < 1) {
+                dropdown.style.display = "none";
+                compileStorefrontGrid();
+                return;
+            }
+
+            fetch(`/api/suggestions?q=${encodeURIComponent(val)}`)
+                .then(res => res.json())
+                .then(suggestions => {
+                    if(suggestions.length > 0) {
+                        dropdown.innerHTML = "";
+                        suggestions.forEach(item => {
+                            dropdown.innerHTML += `<div class="suggestion-item-row" onclick="selectSuggestionNode('${item.replace(/'/g, "\\'")}')">⚡ ${item}</div>`;
+                        });
+                        dropdown.style.display = "block";
+                    } else {
+                        dropdown.style.display = "none";
+                    }
+                });
+
+            compileStorefrontGrid(val.toLowerCase());
+        });
+
+        function selectSuggestionNode(value) {
+            document.getElementById('omnixGlobalSearch').value = value;
+            document.getElementById('suggestionDropdown').style.display = "none";
+            compileStorefrontGrid(value.toLowerCase());
+        }
+
+        document.addEventListener('click', function(e) {
+            if(!document.getElementById('omnixGlobalSearch').contains(e.target)) {
+                document.getElementById('suggestionDropdown').style.display = "none";
+            }
+        });
+
+        function syncTelemetryStreams() {
+            fetch('/api/telemetry').then(r => r.json()).then(d => {
+                if(d && d.inventory) {
+                    MASTER_INVENTORY_STREAM = d.inventory;
+                    compileStorefrontGrid(document.getElementById('omnixGlobalSearch').value.toLowerCase().trim());
+                    document.querySelector('.btn-live-search-engine').innerText = "Search Matrix";
+                }
+            });
+        }
+
+        function launchDeepAnalysisDrawer(productId) {
+            const item = MASTER_INVENTORY_STREAM.find(p => p.id === productId);
+            if (!item) return;
+            focalTargetPayload = item;
+            
+            const stats = item.stats || {};
+            document.getElementById('panelName').innerText = item.name;
+            document.getElementById('panelPlat').innerText = "Lowest Price Vector: " + item.best_platform;
+            document.getElementById('p7Target').innerText = stats.pred_7 ? "₹" + stats.pred_7 : "₹" + item.best_price;
+            document.getElementById('p15Target').innerText = stats.pred_15 ? "₹" + stats.pred_15 : "₹" + item.best_price;
+            document.getElementById('whatsappToggleCheckbox').checked = item.notify === 1;
+
+            const grid = document.getElementById('panelLinksGrid');
+            grid.innerHTML = '';
+            
+            if (item.urls_pool) {
+                Object.keys(item.urls_pool).forEach(key => {
+                    const storeRate = (stats.store_prices && stats.store_prices[key] !== "N/A") ? "₹" + stats.store_prices[key] : "Analyze Live Channel →";
+                    const isBest = (key === item.best_platform);
+                    const highlightStyle = isBest ? 'border-color: var(--neon-emerald); background: rgba(16,185,129,0.04);' : '';
+                    const highlightBadge = isBest ? ' <span style="font-size:9px; background:var(--neon-emerald); color:white; padding:2px 6px; border-radius:4px; margin-left:6px; font-weight:800;">LOWEST PRICE</span>' : '';
+                    
+                    // FIXED ANCHOR ENGINE: Unbreakable click routing mechanics targeting clean window layers
+                    grid.innerHTML += `<a href="${item.urls_pool[key]}" target="_blank" class="store-route-node" style="${highlightStyle}"><span>🌐 Open ${key}${highlightBadge}</span><span style="color:var(--neon-cyan); font-weight:800;">${storeRate}</span></a>`;
+                });
+            }
+
+            document.getElementById('biDrawer').classList.add('active');
+
+            const ctx = document.getElementById('drawerChartCore').getContext('2d');
+            if (chartInstanceReference) chartInstanceReference.destroy();
+            
+            chartInstanceReference = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: stats.chart_labels || ["01", "02", "03"],
+                    datasets: [{
+                        data: stats.chart_prices || [item.best_price],
+                        borderColor: '#0ea5e9', borderWidth: 2.5, tension: 0.2, fill: false, pointRadius: 4, pointBackgroundColor: '#fff'
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { color: 'rgba(255,255,255,0.05)' } } } }
+            });
+        }
+
+        function closeDeepAnalysisDrawer() { document.getElementById('biDrawer').classList.remove('active'); }
+
+        function commitToggleState() {
+            if (!focalTargetPayload) return;
+            fetch(`/api/toggle-alert/${focalTargetPayload.id}`, { method: 'POST' })
+                .then(res => res.json()).then(d => { focalTargetPayload.notify = d.new_state; });
+        }
+
+        window.onload = function() { compileStorefrontGrid(); };
+        setInterval(syncTelemetryStreams, 6000);
+    </script>
+</body>
+</html>
